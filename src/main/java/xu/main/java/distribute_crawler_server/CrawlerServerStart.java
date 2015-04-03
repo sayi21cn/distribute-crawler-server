@@ -1,7 +1,7 @@
 package xu.main.java.distribute_crawler_server;
 
 import xu.main.java.distribute_crawler_server.db.DbTracker;
-import xu.main.java.distribute_crawler_server.job.JobTracker;
+import xu.main.java.distribute_crawler_server.nio.TaskPushNioServer;
 
 public class CrawlerServerStart {
 
@@ -14,8 +14,12 @@ public class CrawlerServerStart {
 		dbTracker.start();
 
 		// JobTracker线程启动
-		JobTracker jobTacker = new JobTracker();
-		jobTacker.start();
+		// JobTracker jobTacker = new JobTracker();
+		// jobTacker.start();
+
+		// Task Push NIO Server 线程启动
+		TaskPushNioServer taskPushNioServer = new TaskPushNioServer();
+		taskPushNioServer.start();
 
 	}
 

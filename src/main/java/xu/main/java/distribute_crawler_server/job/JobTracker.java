@@ -1,7 +1,5 @@
 package xu.main.java.distribute_crawler_server.job;
 
-import java.io.IOException;
-import java.net.ServerSocket;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -9,13 +7,12 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 import org.apache.log4j.Logger;
 
+import xu.main.java.distribute_crawler_common.nio_data.TaskVO;
 import xu.main.java.distribute_crawler_common.util.GsonUtil;
 import xu.main.java.distribute_crawler_common.util.StringHandler;
 import xu.main.java.distribute_crawler_common.vo.TaskFeedbackVO;
 import xu.main.java.distribute_crawler_common.vo.TaskRecord;
-import xu.main.java.distribute_crawler_common.vo.TaskVO;
 import xu.main.java.distribute_crawler_common.vo.TemplateContentVO;
-import xu.main.java.distribute_crawler_server.config.NetServerConfig;
 import xu.main.java.distribute_crawler_server.config.ServerDbConfig;
 import xu.main.java.distribute_crawler_server.db.DbDao;
 
@@ -34,15 +31,6 @@ public class JobTracker extends Thread {
 
 	@Override
 	public void run() {
-
-		try {
-			ServerSocket serverSocket = new ServerSocket(NetServerConfig.QUERY_TASK_SERVER_PORT);
-			serverSocket.accept();
-			
-			
-		} catch (IOException e) {
-			logger.error("", e);
-		}
 
 	}
 
