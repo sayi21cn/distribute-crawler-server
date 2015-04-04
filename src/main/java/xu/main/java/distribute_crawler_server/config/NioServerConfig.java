@@ -8,10 +8,10 @@ public class NioServerConfig {
 
 	public static final String NIO_CHARSET = "UTF-8";
 
-	public static final String INET_SOCKET_ADDRESS = "127.0.0.1";
+	public static final String INET_SOCKET_ADDRESS = "192.168.1.10";
 
-	// public static final int POLL_TASK_INTERVEL = 1000 * 60;
+	public static final int POLL_TASK_INTERVEL = 1000 * 30;
 
-	public static final int POLL_TASK_INTERVEL = 1000 * 1;
+	// public static final int POLL_TASK_INTERVEL = 1000 * 1;
 
 }

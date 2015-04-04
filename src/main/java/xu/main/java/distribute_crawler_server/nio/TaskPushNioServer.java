@@ -6,7 +6,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,18 +17,18 @@ public class TaskPushNioServer extends Thread {
 
 	private Selector selector;
 
-	private Charset charset = Charset.forName(NioServerConfig.NIO_CHARSET);
+//	private Charset charset = Charset.forName(NioServerConfig.NIO_CHARSET);
 
 	private Map<String, SocketChannel> socketMap = new HashMap<String, SocketChannel>();
 	
-	private Logger logger = Logger.getLogger(TaskPushThread.class);
+	private Logger logger = Logger.getLogger(TaskPushNioThread.class);
 
 	@Override
 	public void run() {
 		
 		try {
 			
-			TaskPushThread taskPushThread = new TaskPushThread(socketMap);
+			TaskPushNioThread taskPushThread = new TaskPushNioThread(socketMap);
 			
 			taskPushThread.start();
 			

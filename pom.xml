@@ -46,11 +46,7 @@
 		<profile>
 			<id>runtime-jar</id>
 			<build>
-				<plugins>
-					<!--plugin> <artifactId>maven-assembly-plugin</artifactId> <version>2.5.2</version> 
-						<configuration> <descriptors> <descriptor>assembly.xml</descriptor> </descriptors> 
-						</configuration> </plugin -->
-
+				<plugins>					
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-dependency-plugin</artifactId>

@@ -9,7 +9,7 @@ public class ServerDbConfig {
 
 	public static final String URL_SPILT_STRING = ",";
 
-	public static final String SERVER_IP = "127.0.0.1";
+	public static final String SERVER_IP = "192.168.1.66";
 
 	public static final int SERVER_PORT = 3306;
 
