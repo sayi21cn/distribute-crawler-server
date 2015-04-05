@@ -1,4 +1,4 @@
-package xu.main.java.distribute_crawler_server.job;
+package xu.main.java.distribute_crawler_server.queue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +31,10 @@ public class JobCenter {
 
 	public static TaskRecord pollWaitTaskRecord() {
 		return waitTaskRecordQueue.poll();
+	}
+
+	public static int taskWaitQueueSize() {
+		return waitTaskRecordQueue.size();
 	}
 
 	public static boolean offerTaskRecordToWaitQueue(TaskRecord taskRecord) {

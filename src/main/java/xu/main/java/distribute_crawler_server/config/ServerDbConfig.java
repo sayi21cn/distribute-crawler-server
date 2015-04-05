@@ -3,7 +3,7 @@ package xu.main.java.distribute_crawler_server.config;
 public class ServerDbConfig {
 
 	/* 查询任务数据库间隔时间 毫秒 */
-	public static final int DB_TRACKER_QUERY_INTERVAL = 1000 * 60;
+	public static final int DB_TRACKER_QUERY_INTERVAL = 1000 * 60 * 10;
 
 	public static final String SPLIT_STRING = "#####";
 

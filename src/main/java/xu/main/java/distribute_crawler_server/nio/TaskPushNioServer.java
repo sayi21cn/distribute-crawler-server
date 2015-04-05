@@ -11,27 +11,27 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import xu.main.java.distribute_crawler_server.config.NioServerConfig;
+import xu.main.java.distribute_crawler_server.config.NetConfig;
 
 public class TaskPushNioServer extends Thread {
 
 	private Selector selector;
 
-//	private Charset charset = Charset.forName(NioServerConfig.NIO_CHARSET);
+	// private Charset charset = Charset.forName(NioServerConfig.NIO_CHARSET);
 
 	private Map<String, SocketChannel> socketMap = new HashMap<String, SocketChannel>();
-	
+
 	private Logger logger = Logger.getLogger(TaskPushNioThread.class);
 
 	@Override
 	public void run() {
-		
+
 		try {
-			
+
 			TaskPushNioThread taskPushThread = new TaskPushNioThread(socketMap);
-			
+
 			taskPushThread.start();
-			
+
 			acceptCollection();
 
 		} catch (IOException e) {
@@ -46,7 +46,7 @@ public class TaskPushNioServer extends Thread {
 
 		ServerSocketChannel server = ServerSocketChannel.open();
 
-		InetSocketAddress inetSocketAddress = new InetSocketAddress(NioServerConfig.INET_SOCKET_ADDRESS, NioServerConfig.TASK_QUERY_NIO_SERVER_PORT);
+		InetSocketAddress inetSocketAddress = new InetSocketAddress(NetConfig.INET_SOCKET_ADDRESS, NetConfig.NIO_TASK_QUERY_SERVER_PORT);
 
 		server.bind(inetSocketAddress);
 
@@ -54,30 +54,27 @@ public class TaskPushNioServer extends Thread {
 
 		server.register(selector, SelectionKey.OP_ACCEPT);
 
+		logger.info(String.format("TaskPushNioServer started,bind ip:[ %s ] bind port:[ %s ]", NetConfig.INET_SOCKET_ADDRESS, NetConfig.NIO_TASK_QUERY_SERVER_PORT));
+
 		while (selector.select() > 0) {
 
 			for (SelectionKey sk : selector.selectedKeys()) {
 
 				selector.selectedKeys().remove(sk);
 
-				System.out.print("获取连接 : ");
-
 				if (sk.isAcceptable()) {
-					
+
 					SocketChannel sc = server.accept();
 
 					logger.info(sc.getRemoteAddress() + " connected .");
 
 					socketMap.put(sc.getRemoteAddress().toString(), sc);
 
-				//	sc.write(charset.encode("server received connection ."));
+					// sc.write(charset.encode("server received connection ."));
 				}
 
 				sk.interestOps(SelectionKey.OP_ACCEPT);
-				
-				
-				
-				
+
 			}
 
 		}

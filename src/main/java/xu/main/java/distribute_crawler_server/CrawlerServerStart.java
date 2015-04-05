@@ -4,6 +4,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 import xu.main.java.distribute_crawler_server.db.DbTracker;
 import xu.main.java.distribute_crawler_server.nio.TaskPushNioServer;
+import xu.main.java.distribute_crawler_server.udp.TaskSpeedUdpServer;
 
 public class CrawlerServerStart {
 
@@ -15,13 +16,13 @@ public class CrawlerServerStart {
 		DbTracker dbTracker = new DbTracker();
 		dbTracker.start();
 
-		// JobTracker线程启动
-		// JobTracker jobTacker = new JobTracker();
-		// jobTacker.start();
-
 		// Task Push NIO Server 线程启动
 		TaskPushNioServer taskPushNioServer = new TaskPushNioServer();
 		taskPushNioServer.start();
+		
+		// Task Speed Feedback UDP Server线程启动
+		TaskSpeedUdpServer taskSpeedUdpServer = new TaskSpeedUdpServer();
+		taskSpeedUdpServer.start();
 
 	}
 

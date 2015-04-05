@@ -11,21 +11,21 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 import org.apache.log4j.Logger;
 
-import xu.main.java.distribute_crawler_common.nio_data.TaskVO;
+import xu.main.java.distribute_crawler_common.conn_data.TaskVO;
 import xu.main.java.distribute_crawler_common.util.GsonUtil;
 import xu.main.java.distribute_crawler_common.util.StringHandler;
 import xu.main.java.distribute_crawler_common.vo.TaskRecord;
 import xu.main.java.distribute_crawler_common.vo.TemplateContentVO;
-import xu.main.java.distribute_crawler_server.config.NioServerConfig;
+import xu.main.java.distribute_crawler_server.config.NetConfig;
 import xu.main.java.distribute_crawler_server.config.ServerDbConfig;
 import xu.main.java.distribute_crawler_server.db.DbDao;
-import xu.main.java.distribute_crawler_server.job.JobCenter;
+import xu.main.java.distribute_crawler_server.queue.JobCenter;
 
 public class TaskPushNioThread extends Thread {
 
 	private Map<String, SocketChannel> socketMap;
 
-	private Charset charset = Charset.forName(NioServerConfig.NIO_CHARSET);
+	private Charset charset = Charset.forName(NetConfig.NIO_CHARSET);
 
 	private Logger logger = Logger.getLogger(TaskPushNioThread.class);
 
@@ -51,7 +51,7 @@ public class TaskPushNioThread extends Thread {
 		while (true) {
 
 			if (socketMap.size() < 1) {
-				logger.warn(String.format("无客户端连接.sleep [%s]ms",NioServerConfig.POLL_TASK_INTERVEL));
+				logger.warn(String.format("无客户端连接.sleep [%s]ms",NetConfig.NIO_PUSH_TASK_INTERVEL));
 				threadSleep();
 				continue;
 			}
@@ -59,7 +59,7 @@ public class TaskPushNioThread extends Thread {
 			TaskVO taskVO = new TaskVO();
 			TaskRecord taskRecord = JobCenter.pollWaitTaskRecord();
 			if (null == taskRecord) {
-				logger.warn(String.format("任务队列无任务,sleep [%s]ms",NioServerConfig.POLL_TASK_INTERVEL));
+				logger.warn(String.format("任务队列无任务,sleep [%s]ms",NetConfig.NIO_PUSH_TASK_INTERVEL));
 				threadSleep();
 				continue;
 			}
@@ -176,7 +176,7 @@ public class TaskPushNioThread extends Thread {
 
 	public void threadSleep() {
 		try {
-			Thread.sleep(NioServerConfig.POLL_TASK_INTERVEL);
+			Thread.sleep(NetConfig.NIO_PUSH_TASK_INTERVEL);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
