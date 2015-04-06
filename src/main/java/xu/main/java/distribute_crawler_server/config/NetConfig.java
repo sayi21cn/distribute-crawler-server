@@ -22,6 +22,6 @@ public class NetConfig {
 
 	public static final int UDP_EXTRACT_RESULT_SERVER_PORT = 5669;
 
-	public static final int UDP_EXTRACT_RESULT_DATA_LEN = 2048000;
+	public static final int UDP_EXTRACT_RESULT_DATA_LEN = 20480000;
 
 }

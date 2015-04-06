@@ -14,12 +14,13 @@ import org.apache.log4j.Logger;
 import xu.main.java.distribute_crawler_common.conn_data.TaskVO;
 import xu.main.java.distribute_crawler_common.util.GsonUtil;
 import xu.main.java.distribute_crawler_common.util.StringHandler;
+import xu.main.java.distribute_crawler_common.util.ThreadUtil;
 import xu.main.java.distribute_crawler_common.vo.TaskRecord;
 import xu.main.java.distribute_crawler_common.vo.TemplateContentVO;
 import xu.main.java.distribute_crawler_server.config.NetConfig;
 import xu.main.java.distribute_crawler_server.config.ServerDbConfig;
 import xu.main.java.distribute_crawler_server.db.DbDao;
-import xu.main.java.distribute_crawler_server.queue.JobCenter;
+import xu.main.java.distribute_crawler_server.queue.PortQueueServerFactory;
 
 public class TaskPushNioThread extends Thread {
 
@@ -31,6 +32,8 @@ public class TaskPushNioThread extends Thread {
 
 	private DbDao dbDao = new DbDao();
 
+	private Queue<String> queue = null;
+
 	public TaskPushNioThread(Map<String, SocketChannel> socketMap) {
 
 		this.socketMap = socketMap;
@@ -38,6 +41,12 @@ public class TaskPushNioThread extends Thread {
 
 	@Override
 	public void run() {
+		logger.info("TaskPushNioThread start!");
+		this.queue = PortQueueServerFactory.getInstance().getQueyeByServerPort(NetConfig.NIO_TASK_QUERY_SERVER_PORT);
+		if (null == this.queue) {
+			logger.error("TaskPushNioThread queue NULL, return");
+			return;
+		}
 		try {
 			push();
 		} catch (IOException e) {
@@ -51,18 +60,31 @@ public class TaskPushNioThread extends Thread {
 		while (true) {
 
 			if (socketMap.size() < 1) {
-				logger.warn(String.format("无客户端连接.sleep [%s]ms",NetConfig.NIO_PUSH_TASK_INTERVEL));
-				threadSleep();
+				logger.warn(String.format("无客户端连接.sleep [%s]ms", NetConfig.NIO_PUSH_TASK_INTERVEL));
+				ThreadUtil.sleep(NetConfig.NIO_PUSH_TASK_INTERVEL);
 				continue;
 			}
 
-			TaskVO taskVO = new TaskVO();
-			TaskRecord taskRecord = JobCenter.pollWaitTaskRecord();
-			if (null == taskRecord) {
-				logger.warn(String.format("任务队列无任务,sleep [%s]ms",NetConfig.NIO_PUSH_TASK_INTERVEL));
-				threadSleep();
+			String taskJson = this.queue.poll();
+			if (StringHandler.isNullOrEmpty(taskJson)) {
+				ThreadUtil.sleep(NetConfig.NIO_PUSH_TASK_INTERVEL);
 				continue;
 			}
+
+			TaskRecord taskRecord = null;
+			;
+			try {
+				taskRecord = GsonUtil.fromJson(taskJson, TaskRecord.class);
+			} catch (Exception e1) {
+
+				continue;
+			}
+			if (null == taskRecord) {
+				logger.warn(String.format("任务队列无任务,sleep [%s]ms", NetConfig.NIO_PUSH_TASK_INTERVEL));
+				ThreadUtil.sleep(NetConfig.NIO_PUSH_TASK_INTERVEL);
+				continue;
+			}
+			TaskVO taskVO = new TaskVO();
 			String templateArea = queryTemplateById(taskRecord.getTemplate_id());
 			try {
 				TemplateContentVO templateContentVO = GsonUtil.fromJson(templateArea, TemplateContentVO.class);
@@ -93,7 +115,7 @@ public class TaskPushNioThread extends Thread {
 				continue;
 			}
 
-			JobCenter.offerTaskRecordToWaitQueue(taskRecord);
+			this.queue.offer(taskJson);
 		}
 	}
 
@@ -172,13 +194,5 @@ public class TaskPushNioThread extends Thread {
 
 	public String queryTemplateById(String templateId) {
 		return dbDao.queryTemplateById(templateId);
-	}
-
-	public void threadSleep() {
-		try {
-			Thread.sleep(NetConfig.NIO_PUSH_TASK_INTERVEL);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 	}
 }

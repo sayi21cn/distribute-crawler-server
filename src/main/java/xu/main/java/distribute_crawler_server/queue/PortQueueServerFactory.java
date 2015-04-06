@@ -44,6 +44,9 @@ public class PortQueueServerFactory {
 		map.put(serverPort, queue);
 	}
 
+	/* 任务推送队列 */
+	private Queue<String> pushQueue = new LinkedBlockingDeque<String>();
+
 	/* 进度反馈队列 */
 	private Queue<String> speedQueue = new LinkedBlockingDeque<String>();
 
@@ -51,6 +54,7 @@ public class PortQueueServerFactory {
 	private Queue<String> extractResultQueue = new LinkedBlockingDeque<String>();
 
 	private void init() {
+		map.put(NetConfig.NIO_TASK_QUERY_SERVER_PORT, pushQueue);
 		map.put(NetConfig.UDP_TASK_SPEED_FEEDBACK_SERVER_PORT, speedQueue);
 		map.put(NetConfig.UDP_EXTRACT_RESULT_SERVER_PORT, extractResultQueue);
 	}
