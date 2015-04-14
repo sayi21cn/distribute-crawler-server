@@ -20,7 +20,6 @@ import xu.main.java.distribute_crawler_common.vo.TemplateContentVO;
 import xu.main.java.distribute_crawler_server.config.NetConfig;
 import xu.main.java.distribute_crawler_server.config.ServerDbConfig;
 import xu.main.java.distribute_crawler_server.db.DbDao;
-import xu.main.java.distribute_crawler_server.queue.PortQueueServerFactory;
 
 public class TaskPushNioThread extends Thread {
 
@@ -32,7 +31,7 @@ public class TaskPushNioThread extends Thread {
 
 	private DbDao dbDao = new DbDao();
 
-	private Queue<String> queue = null;
+	private Queue<String> taskQueue = null;
 
 	public TaskPushNioThread(Map<String, SocketChannel> socketMap) {
 
@@ -42,9 +41,8 @@ public class TaskPushNioThread extends Thread {
 	@Override
 	public void run() {
 		logger.info("TaskPushNioThread start!");
-		this.queue = PortQueueServerFactory.getInstance().getQueyeByServerPort(NetConfig.NIO_TASK_QUERY_SERVER_PORT);
-		if (null == this.queue) {
-			logger.error("TaskPushNioThread queue NULL, return");
+		if (null == this.taskQueue) {
+			logger.error("TaskPushNioThread taskQueue NULL, return");
 			return;
 		}
 		try {
@@ -65,7 +63,7 @@ public class TaskPushNioThread extends Thread {
 				continue;
 			}
 
-			String taskJson = this.queue.poll();
+			String taskJson = this.taskQueue.poll();
 			if (StringHandler.isNullOrEmpty(taskJson)) {
 				ThreadUtil.sleep(NetConfig.NIO_PUSH_TASK_INTERVEL);
 				continue;
@@ -115,7 +113,7 @@ public class TaskPushNioThread extends Thread {
 				continue;
 			}
 
-			this.queue.offer(taskJson);
+			this.taskQueue.offer(taskJson);
 		}
 	}
 
@@ -194,5 +192,9 @@ public class TaskPushNioThread extends Thread {
 
 	public String queryTemplateById(String templateId) {
 		return dbDao.queryTemplateById(templateId);
+	}
+
+	public void setTaskQueue(Queue<String> taskQueue) {
+		this.taskQueue = taskQueue;
 	}
 }

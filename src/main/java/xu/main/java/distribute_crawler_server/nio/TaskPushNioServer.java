@@ -8,6 +8,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
 
 import org.apache.log4j.Logger;
 
@@ -23,12 +24,16 @@ public class TaskPushNioServer extends Thread {
 
 	private Logger logger = Logger.getLogger(TaskPushNioThread.class);
 
+	private Queue<String> taskQueue = null;
+
 	@Override
 	public void run() {
 
 		try {
 
 			TaskPushNioThread taskPushThread = new TaskPushNioThread(socketMap);
+
+			taskPushThread.setTaskQueue(taskQueue);
 
 			taskPushThread.start();
 
@@ -78,5 +83,9 @@ public class TaskPushNioServer extends Thread {
 			}
 
 		}
+	}
+
+	public void setTaskQueue(Queue<String> taskQueue) {
+		this.taskQueue = taskQueue;
 	}
 }

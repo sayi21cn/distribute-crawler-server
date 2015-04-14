@@ -7,9 +7,7 @@ import org.apache.log4j.Logger;
 
 import xu.main.java.distribute_crawler_common.util.GsonUtil;
 import xu.main.java.distribute_crawler_common.vo.TaskRecord;
-import xu.main.java.distribute_crawler_server.config.NetConfig;
 import xu.main.java.distribute_crawler_server.config.ServerDbConfig;
-import xu.main.java.distribute_crawler_server.queue.PortQueueServerFactory;
 
 public class DbTracker extends Thread {
 
@@ -17,13 +15,12 @@ public class DbTracker extends Thread {
 
 	private DbDao dbDao = new DbDao();
 
-	private Queue<String> queue = null;
+	private Queue<String> taskQueue = null;
 
 	@Override
 	public void run() {
 		logger.info("DbTracker: start !");
-		this.queue = PortQueueServerFactory.getInstance().getQueyeByServerPort(NetConfig.NIO_TASK_QUERY_SERVER_PORT);
-		if (null == this.queue) {
+		if (null == this.taskQueue) {
 			logger.error("DbTracker queue NULL,return");
 			return;
 		}
@@ -38,10 +35,10 @@ public class DbTracker extends Thread {
 			for (int taskRecordIndex = 0, len = taskRecordList.size(); taskRecordIndex < len; taskRecordIndex++) {
 				TaskRecord taskRecord = taskRecordList.get(taskRecordIndex);
 				logger.info(String.format("DbTracker:Query task id [%s],task_name [%s], add to waitTaskRecordQueue", taskRecord.getId(), taskRecord.getTask_name()));
-				this.queue.offer(GsonUtil.toJson(taskRecord));
+				this.taskQueue.offer(GsonUtil.toJson(taskRecord));
 
 			}
-			logger.debug("Task Wait Queue Size : " + this.queue.size());
+			logger.debug("Task Wait Queue Size : " + this.taskQueue.size());
 
 			try {
 				logger.info(String.format("Query Task Finished, sleep [ %s ]ms", ServerDbConfig.DB_TRACKER_QUERY_INTERVAL));
@@ -51,6 +48,10 @@ public class DbTracker extends Thread {
 			}
 
 		}
+	}
+
+	public void setTaskQueue(Queue<String> taskQueue) {
+		this.taskQueue = taskQueue;
 	}
 
 }

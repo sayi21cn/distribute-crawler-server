@@ -2,6 +2,7 @@
 /bin
 /etc
 /logs
+*.bat
 *.git
 *.logs
 *.project

@@ -10,8 +10,6 @@ import java.util.Queue;
 
 import org.apache.log4j.Logger;
 
-import xu.main.java.distribute_crawler_server.queue.PortQueueServerFactory;
-
 public class UdpServer extends Thread {
 
 	private String udpServerIp = "127.0.0.1";
@@ -34,10 +32,6 @@ public class UdpServer extends Thread {
 		this.datagramPackgetMaxSize = datagramPacketMaxSize;
 		buff = new byte[datagramPackgetMaxSize];
 		inPacket = new DatagramPacket(buff, datagramPackgetMaxSize);
-		this.queue = PortQueueServerFactory.getInstance().getQueyeByServerPort(udpServerPort);
-		if (null == this.queue) {
-			logger.warn(String.format("UdpServer [%s] has no queue bind with port [%s]", udpServerIp, udpServerPort));
-		}
 	}
 
 	@Override
