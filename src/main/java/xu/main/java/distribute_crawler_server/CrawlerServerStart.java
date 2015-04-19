@@ -14,7 +14,7 @@ public class CrawlerServerStart {
 
 	public static void main(String[] args) {
 
-		PropertyConfigurator.configure("log4j.properties");
+		PropertyConfigurator.configure("etc/log4j.properties");
 
 		/* 任务推送队列 */
 		Queue<String> pushQueue = new LinkedBlockingDeque<String>();
@@ -46,6 +46,10 @@ public class CrawlerServerStart {
 		extractResultUdpServer.setQueue(resultQueue);
 		extractResultUdpServer.setName("TaskExtractResulUdpServer");
 		extractResultUdpServer.start();
+
+		ResultSave resultSave = new ResultSave();
+		resultSave.setResultQueue(resultQueue);
+		resultSave.start();
 
 	}
 
