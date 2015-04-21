@@ -14,7 +14,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!-- mail -->
 		<mail.version>1.4.7</mail.version>
-		<crawler-common.version>2.0-SNAPSHOT</crawler-common.version>
+		<crawler-common.version>2.1-SNAPSHOT</crawler-common.version>
 		<mysql-connector.version>5.1.34</mysql-connector.version>
 	</properties>
 

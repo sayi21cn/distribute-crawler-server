@@ -45,7 +45,7 @@ public class UdpServer extends Thread {
 				socket.receive(inPacket);
 				String feedbackJson = new String(buff, 0, inPacket.getLength());
 
-				logger.info("receive:\t" + feedbackJson);
+				logger.debug("receive:\t" + feedbackJson);
 				if (null != this.queue) {
 					this.queue.offer(feedbackJson);
 				}

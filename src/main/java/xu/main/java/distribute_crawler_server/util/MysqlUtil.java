@@ -9,9 +9,9 @@ import java.sql.Statement;
 
 import xu.main.java.distribute_crawler_server.config.ServerDbConfig;
 
-
-
 public class MysqlUtil {
+
+	private static Connection conn = null;
 
 	static {
 		try {
@@ -23,8 +23,13 @@ public class MysqlUtil {
 
 	public static Connection getConnection() throws SQLException, ClassNotFoundException {
 
+		if (null != conn && !conn.isClosed()) {
+			return conn;
+		}
+
 		String mysqlUrl = "jdbc:mysql://" + ServerDbConfig.SERVER_IP + ":" + ServerDbConfig.SERVER_PORT + "/" + ServerDbConfig.DB_NAME + "?useUnicode=true&characterEncoding=utf-8";
-		return DriverManager.getConnection(mysqlUrl, ServerDbConfig.DB_USER_NAME, ServerDbConfig.DB_PASS_WORD);
+		conn = DriverManager.getConnection(mysqlUrl, ServerDbConfig.DB_USER_NAME, ServerDbConfig.DB_PASS_WORD);
+		return conn;
 	}
 
 	public static boolean saveToDb(Connection conn, String sql) {

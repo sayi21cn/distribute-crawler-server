@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,9 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
+import xu.main.java.distribute_crawler_common.conn_data.ExtractResultVO;
+import xu.main.java.distribute_crawler_common.util.GsonUtil;
+import xu.main.java.distribute_crawler_common.util.StringHandler;
 import xu.main.java.distribute_crawler_common.vo.TaskFeedbackVO;
 import xu.main.java.distribute_crawler_common.vo.TaskRecord;
 import xu.main.java.distribute_crawler_server.util.MysqlUtil;
@@ -33,30 +37,44 @@ public class DbDao {
 
 	private final String UPDATE_TASKRECORDS_STATUS = "update task set task_status = ? where id = ? ;";
 
-	public void resultInsertToDb(Map<Integer, TaskFeedbackVO> speedMap){
-		Statement stmt = null;
+	public void insertResultToDb(ExtractResultVO extractResultVO) {
+		PreparedStatement pstmt = null;
+		String insertTableName = extractResultVO.getSaveTableName();
+
 		try {
 			Connection conn = MysqlUtil.getConnection();
-			stmt = conn.createStatement();
-			for (Iterator<Entry<Integer, TaskFeedbackVO>> it = speedMap.entrySet().iterator(); it.hasNext();) {
-				Entry<Integer, TaskFeedbackVO> entry = it.next();
-				TaskFeedbackVO taskFeedbackVO = entry.getValue();
-				List<String> sqlList = taskFeedbackVO.getInsertSqlList();
-				for(int sqlIndex=0,len=sqlList.size();sqlIndex<len;sqlIndex++){
-					stmt.addBatch(sqlList.get(sqlIndex));
-				}
-				stmt.executeBatch();
+
+			Map<String, String> resultMap = extractResultVO.getResult();
+			if (null == resultMap) {
+				throw new RuntimeException("ResultMap is NULL in ExtractResultVO at DbDao.java 46");
 			}
-			stmt.executeBatch();
+			if (resultMap.isEmpty()) {
+				throw new RuntimeException("ResultMap is Empty in ExtractResultVO at DbDao.java 46");
+			}
+
+			List<String> valueList = new ArrayList<String>();
+			String insertSql = buildSaveSQL(insertTableName, resultMap, valueList);
+
+			logger.debug(String.format("insert Sql : %s", insertSql));
+			pstmt = conn.prepareStatement(insertSql);
+
+			for (int valueIndex = 0, len = valueList.size(); valueIndex < len; valueIndex++) {
+				pstmt.setString(valueIndex + 1, valueList.get(valueIndex));
+			}
+
+			pstmt.execute();
+
 		} catch (ClassNotFoundException e) {
 			logger.error("Class not found Exception", e);
 		} catch (SQLException e) {
 			logger.error("SQLException", e);
+		} catch (Exception e) {
+			logger.error("", e);
 		} finally {
-			MysqlUtil.closeStatement(stmt);
+			MysqlUtil.closePreparedStatement(pstmt);
 		}
 	}
-	
+
 	public void taskSpeedFeedback(Map<Integer, TaskFeedbackVO> speedMap) {
 		PreparedStatement pstmt = null;
 		try {
@@ -158,6 +176,68 @@ public class DbDao {
 			MysqlUtil.closeStatement(stmt);
 		}
 		return urlList;
+	}
+
+	public String buildeTableExistSql(String tableName) {
+
+		return "";
+	}
+
+	public String buildSaveSQL(String insertTableName, Map<String, String> resultMap, List<String> valueList) {
+		StringBuilder insertSqlBuilder = new StringBuilder("insert into ");
+		insertSqlBuilder.append(insertTableName).append(" (");
+		StringBuilder valueBuilder = new StringBuilder(" (");
+
+		for (Iterator<Entry<String, String>> it = resultMap.entrySet().iterator(); it.hasNext();) {
+			Entry<String, String> entry = it.next();
+			String column = entry.getKey();
+			String value = entry.getValue();
+
+			if (StringHandler.isNullOrEmpty(column)) {
+				String taskId = resultMap.get("task_id");
+				logger.warn(String.format("DbDao: Task [%s] return a NULL column , result json : [ %s ]", taskId, GsonUtil.toJson(resultMap)));
+				continue;
+			}
+			if (StringHandler.isNullOrEmpty(value)) {
+				String taskId = resultMap.get("task_id");
+				logger.warn(String.format("DbDao: Task [%s] return a NULL value , result json : [ %s ]", taskId, GsonUtil.toJson(resultMap)));
+				continue;
+			}
+
+			insertSqlBuilder.append(column).append(" ,");
+			valueBuilder.append("?,");
+			valueList.add(value);
+
+		}
+		deleteBuilderLast(insertSqlBuilder, 1);
+		insertSqlBuilder.append(") values");
+		deleteBuilderLast(valueBuilder, 1);
+		insertSqlBuilder.append(valueBuilder.toString());
+		insertSqlBuilder.append(");");
+		return insertSqlBuilder.toString();
+	}
+
+	private void deleteBuilderLast(StringBuilder builder, int deleteNum) {
+		if (null == builder || builder.length() <= deleteNum) {
+			return;
+		}
+		if (deleteNum == 1) {
+			builder.deleteCharAt(builder.length() - 1);
+			return;
+		}
+		builder.delete(builder.length() - deleteNum - 1, builder.length() - 1);
+	}
+
+	public static void main(String[] args) {
+		DbDao dbDao = new DbDao();
+
+		String insertTableName = "test_name";
+		Map<String, String> resultMap = new HashMap<String, String>();
+		List<String> valueList = new ArrayList<String>();
+		resultMap.put("download_url", "http://www.www.com");
+		resultMap.put("errorMessage", "none");
+
+		System.out.println(dbDao.buildSaveSQL(insertTableName, resultMap, valueList));
 	}
 
 }
